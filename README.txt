@@ -2,7 +2,7 @@
 ************************** COPYRIGHT NOTICE *******************************
 ***************************************************************************
 
-Copyright ©2013. The Regents of the University of California (Regents).
+Copyright Â©2013. The Regents of the University of California (Regents).
 All Rights Reserved. Permission to use, copy, modify, and distribute
 this software and its documentation for educational, research, and
 not-for-profit purposes, without fee and without a signed licensing
@@ -153,3 +153,17 @@ In our papers, we mentioned that we used our own photometric stereo algorithm to
 % Run a photometric stereo algorithm on the 10 images of an object in the MIT Intrinsic Image dataset.
 states = go_MIT_PhotometricStereo('params.NATURAL_ILLUMINATION = 0;');
 
+% Turn off _fast functions by declaring no_fast = true
+Currently, we have disabled fast methods by declaring global variable no_fast = true.
+In case, you want to use _fast methods please initialize no_fast to false.
+
+Also, If you find any _fast method not checking no_fast, We are happy to accept PR.
+
+% Sample Output
+*Input
+
+   input_image = double(imread('data/Images/Peets.png'))/255;
+   input_mask = all(input_image > 0,3);
+   output = SIRFS(input_image, input_mask, [], '');
+   
+* Sample Output - https://github.com/bhushan23/SIRFS/blob/master/Sample_output_Peets.png
