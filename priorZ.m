@@ -74,7 +74,7 @@ if mult_smooth ~= 0
   
   losses_Z.curvature = sum(L(:));
   loss_Z = loss_Z + mult_smooth * losses_Z.curvature;
-  if no_fast == true
+  if no_fast == false
     d_loss_Z = d_loss_Z + mult_smooth * getK_backprop_fast_mat(dL_KZ, dKZ);
   else
     d_loss_Z = d_loss_Z + mult_smooth * getK_backprop(dL_KZ, dKZ, 3);
