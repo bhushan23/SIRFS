@@ -25,6 +25,7 @@
 
 function [loss_A, d_loss_A] = priorA(A, data, params)
 
+global no_fast
 if size(A,3) == 1
 
   loss_A = 0;
@@ -166,8 +167,11 @@ else
     high = data.prior.reflectance.color.bin_high;
     
     dV = 0;
-    A_splat = splat3_fast_wrapper(Av_white, low, high);
-    
+    if no_fast == false
+      A_splat = splat3_fast_wrapper(Av_white, low, high);
+    else
+      A_splat = splat3(Av_white, low, high);
+    end
     if mult_entropy ~= 0
       [v, dv] = renyi3_fixed_sub(Av_white, A_splat, sigma, 2);
       
@@ -190,9 +194,12 @@ else
     else
       losses_A.hist = 0;
     end
-    
-    d_loss_Av = d_loss_Av + splat3_backprop_fast_wrapper(dV, A_splat) * C;
-    
+    if no_fast == false    
+        d_loss_Av = d_loss_Av + splat3_backprop_fast_wrapper(dV, A_splat) * C;
+    else
+        d_loss_Av = d_loss_Av + splat3_backprop(dV, A_splat) * C;
+
+    end
   else
     losses_A.entropy = 0;
     losses_A.hist = 0;
