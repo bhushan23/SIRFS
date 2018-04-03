@@ -1,4 +1,4 @@
-% Copyright ©2013. The Regents of the University of California (Regents).
+% Copyright ï¿½2013. The Regents of the University of California (Regents).
 % All Rights Reserved. Permission to use, copy, modify, and distribute
 % this software and its documentation for educational, research, and
 % not-for-profit purposes, without fee and without a signed licensing
@@ -22,6 +22,12 @@
 % PROVIDED HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO
 % PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
+global no_fast
+no_fast = false;
+
+input_image = double(imread('data/Images/Peets.png'))/255;
+input_mask = all(input_image > 0,3);
+output = SIRFS(input_image, input_mask, [], '');
 
 function output = SIRFS(input_image, input_mask, input_height, eval_string)
 % output = SIRFS(input_image, input_mask, input_height, eval_string)
@@ -159,6 +165,7 @@ end
 params.LOSSFUN = 'lossfun_sirfs';
     
 output = do_Solve(data, params);
-    
+
+end
 
 

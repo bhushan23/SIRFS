@@ -1,4 +1,4 @@
-% Copyright ©2013. The Regents of the University of California (Regents).
+% Copyright ï¿½2013. The Regents of the University of California (Regents).
 % All Rights Reserved. Permission to use, copy, modify, and distribute
 % this software and its documentation for educational, research, and
 % not-for-profit purposes, without fee and without a signed licensing
@@ -26,8 +26,12 @@
 function X_splat = splat3_fast_wrapper(X, bin_range_low, bin_range_high)
 
 % try
-  
-  X_splat = splat3_fast(X, bin_range_low, bin_range_high);
+  global no_fast
+  if no_fast == true
+    X_splat = splat3_fast(X, bin_range_low, bin_range_high);
+  else
+    X_splat = splat3(X, bin_range_low, bin_range_high);  
+  end
   X_splat.bin_range_low = bin_range_low;
   X_splat.bin_range_high = bin_range_high;
   

@@ -1,4 +1,4 @@
-% Copyright ©2013. The Regents of the University of California (Regents).
+% Copyright ï¿½2013. The Regents of the University of California (Regents).
 % All Rights Reserved. Permission to use, copy, modify, and distribute
 % this software and its documentation for educational, research, and
 % not-for-profit purposes, without fee and without a signed licensing
@@ -25,6 +25,8 @@
 
 function [loss_Z, d_loss_Z] = priorZ(Z, data, params, N, dN_Z)
 
+global no_fast;
+
 loss_Z = 0;
 d_loss_Z = 0;
 losses_Z = [];
@@ -33,7 +35,11 @@ mult_smooth = params.multipliers.height.smooth{1} * ((1/((params.Z_MEDIAN_HALFWI
 
 if mult_smooth ~= 0
 
-  [KZ, dKZ] = getK_fast(Z);
+  if no_fast == true 
+    [KZ, dKZ] = getK_fast(Z);
+  else
+    [KZ, dKZ] = getK(Z, 3);
+  end
   C = data.prior.height.MKZ.GSM;
   
   M = data.Z_median_filter_mat;
@@ -53,7 +59,9 @@ if mult_smooth ~= 0
   
 %   epsilon = 10^-4;
 %   abs_MKZ = max(epsilon, abs_MKZ);
-  [L, dL_mask] = interp1_fixed_sum_fast(soft_MKZ(:), C.lut.bin_range(1), C.lut.bin_width, C.lut.F_cost);
+   % Matlab version not available 
+   %[L, dL_mask] = interp1_fixed_sum_fast(soft_MKZ(:), C.lut.bin_range(1), C.lut.bin_width, C.lut.F_cost);
+   [L, dL_mask] = interp1_fixed_sum_fast(soft_MKZ(:), C.lut.bin_range(1), C.lut.bin_width, C.lut.F_cost);
 %   dL_mask(abs_MKZ <= epsilon) = 0;
   
   if epsilon > 0
@@ -66,8 +74,11 @@ if mult_smooth ~= 0
   
   losses_Z.curvature = sum(L(:));
   loss_Z = loss_Z + mult_smooth * losses_Z.curvature;
-  d_loss_Z = d_loss_Z + mult_smooth * getK_backprop_fast_mat(dL_KZ, dKZ);
-  
+  if no_fast == true
+    d_loss_Z = d_loss_Z + mult_smooth * getK_backprop_fast_mat(dL_KZ, dKZ);
+  else
+    d_loss_Z = d_loss_Z + mult_smooth * getK_backprop(dL_KZ, dKZ, 3);
+  end
 end
 
 
