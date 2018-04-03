@@ -22,12 +22,20 @@
 % PROVIDED HEREUNDER IS PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO
 % PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
-global no_fast
-no_fast = false;
 
-input_image = double(imread('data/Images/Peets.png'))/255;
-input_mask = all(input_image > 0,3);
-output = SIRFS(input_image, input_mask, [], '');
+% Control usage of _fast methods implemented in c to boost your runtime
+% Turning this off by default. To enable - please initialize no_fast to
+% false. Following is one of the error you might want to turn off _fast
+% 'Array exceeds maximum array size preference.'
+% If you see any _fast method un-guarded with this. Please do so!
+global no_fast
+no_fast = true;
+
+% Following is sample test-case for verifying if everything is working
+% correctly.
+% input_image = double(imread('data/Images/Peets.png'))/255;
+% input_mask = all(input_image > 0,3);
+% output = SIRFS(input_image, input_mask, [], '');
 
 function output = SIRFS(input_image, input_mask, input_height, eval_string)
 % output = SIRFS(input_image, input_mask, input_height, eval_string)

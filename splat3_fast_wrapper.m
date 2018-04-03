@@ -27,7 +27,7 @@ function X_splat = splat3_fast_wrapper(X, bin_range_low, bin_range_high)
 
 % try
   global no_fast
-  if no_fast == true
+  if no_fast == false
     X_splat = splat3_fast(X, bin_range_low, bin_range_high);
   else
     X_splat = splat3(X, bin_range_low, bin_range_high);  

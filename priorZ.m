@@ -35,7 +35,7 @@ mult_smooth = params.multipliers.height.smooth{1} * ((1/((params.Z_MEDIAN_HALFWI
 
 if mult_smooth ~= 0
 
-  if no_fast == true 
+  if no_fast == false 
     [KZ, dKZ] = getK_fast(Z);
   else
     [KZ, dKZ] = getK(Z, 3);
