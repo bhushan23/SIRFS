@@ -33,9 +33,29 @@ no_fast = true;
 
 % Following is sample test-case for verifying if everything is working
 % correctly.
-% input_image = double(imread('data/Images/Peets.png'))/255;
-% input_mask = all(input_image > 0,3);
-% output = SIRFS(input_image, input_mask, [], '');
+
+
+
+path = '../Light-Estimation/LDAN/data/real-Croped/crop_resize_maskout/';
+Files=dir(path);
+clear shflatten;
+clear shfilename;
+shflatten = []
+%shflatten = zeros(length(Files)-1, 27);
+shfilename = [] %repmat(' ',[length(Files)-1,1]);
+for k=3:100 %length(Files)
+    disp('K IS --------');
+    disp(k);
+    filename = strcat(path, Files(k).name); %'000001.jpg.png');
+    input_image = double(imread(filename))/255;
+    input_mask = all(input_image > 0,3);
+    output = SIRFS(input_image, input_mask, [], '');    
+    disp(output.light);
+    shflatten = [ [shflatten] ; reshape(output.light, [27, 1])'];
+    shfilename = [ [shfilename]; Files(k).name];
+end
+csvwrite('RealImage_Celeb_000_SH.csv',shflatten);
+csvwrite('RealImage_Celeb_000_names.csv', shfilename);
 
 function output = SIRFS(input_image, input_mask, input_height, eval_string)
 % output = SIRFS(input_image, input_mask, input_height, eval_string)
@@ -88,18 +108,18 @@ eval(params.EVAL_STRING);
 load(params.PRIOR_MODEL_STRING)
 
 if params.SHAPE_FROM_SHADING
-  fprintf('params.multipliers.sfs = \n');
-  disp(params.multipliers.sfs)
+  %fprintf('params.multipliers.sfs = \n');
+  %disp(params.multipliers.sfs)
 else
-  fprintf('params.multipliers.reflectance = \n');
-  disp(params.multipliers.reflectance)
+  %fprintf('params.multipliers.reflectance = \n');
+  %disp(params.multipliers.reflectance)
 end
 
-fprintf('params.multipliers.height = \n');
-disp(params.multipliers.height)
+%fprintf('params.multipliers.height = \n');
+%disp(params.multipliers.height)
 
-fprintf('params.multipliers.light = \n');
-disp(params.multipliers.light)
+%fprintf('params.multipliers.light = \n');
+%disp(params.multipliers.light)
 
 params.USE_COLOR_IMAGES = size(input_image,3) == 3;
 
