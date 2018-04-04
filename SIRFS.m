@@ -28,35 +28,6 @@
 % false. Following is one of the error you might want to turn off _fast
 % 'Array exceeds maximum array size preference.'
 % If you see any _fast method un-guarded with this. Please do so!
-global no_fast
-no_fast = true;
-
-% Following is sample test-case for verifying if everything is working
-% correctly.
-
-
-
-path = '../Light-Estimation/LDAN/data/real-Croped/crop_resize_maskout/';
-Files=dir(path);
-clear shflatten;
-clear shfilename;
-shflatten = []
-%shflatten = zeros(length(Files)-1, 27);
-shfilename = [] %repmat(' ',[length(Files)-1,1]);
-for k=3:100 %length(Files)
-    disp('K IS --------');
-    disp(k);
-    filename = strcat(path, Files(k).name); %'000001.jpg.png');
-    input_image = double(imread(filename))/255;
-    input_mask = all(input_image > 0,3);
-    output = SIRFS(input_image, input_mask, [], '');    
-    disp(output.light);
-    shflatten = [ [shflatten] ; reshape(output.light, [27, 1])'];
-    shfilename = [ [shfilename]; Files(k).name];
-end
-csvwrite('RealImage_Celeb_000_SH.csv',shflatten);
-csvwrite('RealImage_Celeb_000_names.csv', shfilename);
-
 function output = SIRFS(input_image, input_mask, input_height, eval_string)
 % output = SIRFS(input_image, input_mask, input_height, eval_string)
 % runs SIRFS on input_image, subject to the masking in input_mask.
