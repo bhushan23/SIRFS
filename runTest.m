@@ -6,7 +6,7 @@ no_fast = true;
 
 
 
-path = '../data/crop_resize_maskout/';
+path =  '../Light-Estimation/LDAN/data/real-Cropped/crop_resize_maskout/' %'../data/crop_resize_maskout/';
 Files=dir(path);
 clear shflatten;
 clear shfilename;
