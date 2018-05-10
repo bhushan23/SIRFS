@@ -5,13 +5,22 @@ no_fast = true;
 % correctly.
 
 runSIRFS = true; %false;
-sizePerH5 = 3;
+sizePerH5 = 300;
+tag = '00'
 path = './synImages/';
+%mkdir path;
+path = strcat(path, tag);
+%mkdir path;
 data_path = '/home/bsonawane/Thesis/LightEstimation/synData/Soumyadip/data/DATA_pose_15/'   % '../Light-Estimation/LDAN/data/synthetic/'; %'../data/crop_resize_maskout/';
-maskFile = strcat(data_path, 'maskList');
-faceFile = strcat(data_path, 'faceList');
-lightingFile = strcat(data_path, 'lightingList');
-normalFile = strcat(data_path, 'normalList');
+maskFile = strcat('maskList_', tag);
+faceFile = strcat('faceList_', tag);
+lightingFile = strcat('lightingList_', tag);
+normalFile = strcat('normalList_', tag);
+
+maskFile = strcat(data_path, maskFile)
+faceFile = strcat(data_path, faceFile);
+lightingFile = strcat(data_path, lightingFile);
+normalFile = strcat(data_path, normalFile);
 %Files=dir(path);
 aF = fopen(faceFile);
 lF = fopen(lightingFile);
@@ -33,6 +42,7 @@ trueLighting = [];
 k = 0;
 while feof(aF) == false
     disp('Processing....');
+    k = k + 1;
     disp(k);
     filename = fgetl(aF);
     normalName = fgetl(nF);
