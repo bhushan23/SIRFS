@@ -5,9 +5,9 @@ no_fast = true;
 % correctly.
 
 runSIRFS = true; %false;
-sizePerH5 = 1;
+sizePerH5 = 3;
 path = './synImages/';
-data_path =  '../Light-Estimation/LDAN/data/synthetic/'; %'../data/crop_resize_maskout/';
+data_path = '/home/bsonawane/Thesis/LightEstimation/synData/Soumyadip/data/DATA_pose_15/'   % '../Light-Estimation/LDAN/data/synthetic/'; %'../data/crop_resize_maskout/';
 maskFile = strcat(data_path, 'maskList');
 faceFile = strcat(data_path, 'faceList');
 lightingFile = strcat(data_path, 'lightingList');
@@ -33,7 +33,7 @@ trueLighting = [];
 k = 0;
 while feof(aF) == false
     disp('Processing....');
-    
+    disp(k);
     filename = fgetl(aF);
     normalName = fgetl(nF);
     lightName = fgetl(lF);
@@ -62,17 +62,24 @@ while feof(aF) == false
     fileM = imread(maskName);
     fileM = imresize(fileM, [64, 64]);
     maskFile = rgb2gray(fileM) == 255;
-    rotatedM = permute(maskFile, [2, 1]);
-    iMask = cat(3, iMask, rotatedM);
     
-    fileN = faceFile.* uint8(maskFile);
+    nMask = []
+    nMask = cat(3, nMask, maskFile);
+    nMask = cat(3, nMask, maskFile);
+    nMask = cat(3, nMask, maskFile);
+    rotatedM = permute(nMask, [2, 1, 3]);
+    iMask = cat(4, iMask, rotatedM);
+    
+
+    fileN = faceFile.* uint8(nMask);
     normalImg = imread(normalName);
     normalImg = imresize(normalImg, [64, 64]);
     rotated = permute(normalImg, [2, 1, 3]);
     trueNormal = cat(4, trueNormal, rotated);
     
-    trueSH = readtable(lightName, 'Delimiter', '\t');
-    trueSH = table2array(trueSH);
+    %trueSH = readtable(lightName, 'Delimiter', '\t');
+    %trueSH = table2array(trueSH);
+    trueSH = dlmread(lightName, '\t')
     trueLighting = [ [trueLighting] ; reshape(trueSH, [27, 1])'];
     size(trueLighting)
     if runSIRFS
@@ -96,7 +103,6 @@ while feof(aF) == false
         % Final loss is scalar value
         finalLoss = [[finalLoss]; output.final_loss];
     end
-    k = k + 1
     if mod(k, sizePerH5) == 0
         dataName = strcat(path, '/data_');
         dataName = strcat(dataName, int2str(k / sizePerH5));
@@ -104,7 +110,7 @@ while feof(aF) == false
         h5create(dataName, '/Image', [64 64 3 sizePerH5], 'Datatype', 'uint8');
         h5write(dataName, '/Image', im);
 
-        h5create(dataName, '/Mask', [64 64 sizePerH5], 'Datatype', 'uint8');
+        h5create(dataName, '/Mask', [64 64 3 sizePerH5], 'Datatype', 'uint8');
         h5write(dataName, '/Mask', iMask);
 
         im = [];
