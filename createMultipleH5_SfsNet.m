@@ -5,20 +5,23 @@ no_fast = true;
 % correctly.
 
 runSIRFS = true; %false;
-sizePerH5 = 300;
+sizePerH5 = 1;
 path = './synImages/';
 data_path =  '../Light-Estimation/LDAN/data/synthetic/'; %'../data/crop_resize_maskout/';
-albedoFile = strcat(data_path, 'albedoList');
+maskFile = strcat(data_path, 'maskList');
+faceFile = strcat(data_path, 'faceList');
 lightingFile = strcat(data_path, 'lightingList');
 normalFile = strcat(data_path, 'normalList');
 %Files=dir(path);
-aF = fopen(albedoFile)
+aF = fopen(faceFile);
 lF = fopen(lightingFile);
 nF = fopen(normalFile);
+mF = fopen(maskFile);
 
 clear shflatten;
 shflatten = [];
 im = [];
+iMask = [];
 normals = [];
 shadings = [];
 finalLoss = [];
@@ -27,20 +30,21 @@ heights = [];
 trueNormal = [];
 trueLighting = [];
 
-k = 0
+k = 0;
 while feof(aF) == false
     disp('Processing....');
     
     filename = fgetl(aF);
     normalName = fgetl(nF);
     lightName = fgetl(lF);
+    mName = fgetl(mF);
     
     temp = strsplit(filename, '/');
     H5Name = temp{1,2};
     filename = strcat(data_path, filename);
     normalName = strcat(data_path, normalName);
     lightName = strcat(data_path, lightName);
-    
+    maskName = strcat(data_path, mName);
     % fileN = imread(filename);
     % data = h5read(filename, '/data_1');
     % reading and converting synthetic images
@@ -48,11 +52,20 @@ while feof(aF) == false
     % enf of reading
     % [~, ~, ~, Size] = size(allFiles);
     %fileN = allFiles(:,:,:,j);
-    fileN = imread(filename);
-    fileN = imresize(fileN, [64, 64]);
-    rotated = permute(fileN, [2, 1, 3]);
+    
+    faceFile = imread(filename);
+    faceFile = imresize(faceFile, [64, 64]);
+    rotated = permute(faceFile, [2, 1, 3]);
     im = cat(4, im, rotated);
     
+    
+    fileM = imread(maskName);
+    fileM = imresize(fileM, [64, 64]);
+    maskFile = rgb2gray(fileM) == 255;
+    rotatedM = permute(maskFile, [2, 1]);
+    iMask = cat(3, iMask, rotatedM);
+    
+    fileN = faceFile.* uint8(maskFile);
     normalImg = imread(normalName);
     normalImg = imresize(normalImg, [64, 64]);
     rotated = permute(normalImg, [2, 1, 3]);
@@ -61,7 +74,7 @@ while feof(aF) == false
     trueSH = readtable(lightName, 'Delimiter', '\t');
     trueSH = table2array(trueSH);
     trueLighting = [ [trueLighting] ; reshape(trueSH, [27, 1])'];
-    
+    size(trueLighting)
     if runSIRFS
         input_image = double(fileN)/255;
         input_mask = all(input_image > 0,3);
@@ -91,6 +104,11 @@ while feof(aF) == false
         h5create(dataName, '/Image', [64 64 3 sizePerH5], 'Datatype', 'uint8');
         h5write(dataName, '/Image', im);
 
+        h5create(dataName, '/Mask', [64 64 sizePerH5], 'Datatype', 'uint8');
+        h5write(dataName, '/Mask', iMask);
+
+        im = [];
+        iMask = [];
         if runSIRFS
             shOut = shflatten';
             % Store Lighting
@@ -117,9 +135,10 @@ while feof(aF) == false
             h5write(dataName, '/TrueNormal', trueNormal);
             
             % Store Final Loss
+            trueLighting = trueLighting';
             h5create(dataName, '/TrueLighting', [27 sizePerH5], 'Datatype', 'double');
             h5write(dataName, '/TrueLighting', trueLighting);
-            im = [];
+            
             shflatten = [];
             normals = [];
             reflectances = [];
