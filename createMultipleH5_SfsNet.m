@@ -12,16 +12,19 @@ path = './synImages/';
 path = strcat(path, tag);
 %mkdir path;
 data_path = '/home/bsonawane/Thesis/LightEstimation/synData/Soumyadip/data/DATA_pose_15/'   % '../Light-Estimation/LDAN/data/synthetic/'; %'../data/crop_resize_maskout/';
+albedoFile = strcat('albedoList_', tag);
 maskFile = strcat('maskList_', tag);
 faceFile = strcat('faceList_', tag);
 lightingFile = strcat('lightingList_', tag);
 normalFile = strcat('normalList_', tag);
 
+albedoFile = strcat(data_path, albedoFile);
 maskFile = strcat(data_path, maskFile)
 faceFile = strcat(data_path, faceFile);
 lightingFile = strcat(data_path, lightingFile);
 normalFile = strcat(data_path, normalFile);
 %Files=dir(path);
+albedoF = fopen(albedoFile);
 aF = fopen(faceFile);
 lF = fopen(lightingFile);
 nF = fopen(normalFile);
@@ -38,6 +41,7 @@ reflectances = [];
 heights = [];
 trueNormal = [];
 trueLighting = [];
+shading = []
 
 k = 0;
 while feof(aF) == false
@@ -48,9 +52,11 @@ while feof(aF) == false
     normalName = fgetl(nF);
     lightName = fgetl(lF);
     mName = fgetl(mF);
-    
+    albedoName = fgetl(albedoF);
+
     temp = strsplit(filename, '/');
     H5Name = temp{1,2};
+    albedoName = strcat(data_path, albedoName);
     filename = strcat(data_path, filename);
     normalName = strcat(data_path, normalName);
     lightName = strcat(data_path, lightName);
@@ -68,6 +74,10 @@ while feof(aF) == false
     rotated = permute(faceFile, [2, 1, 3]);
     im = cat(4, im, rotated);
     
+   
+    albedoFile = imread(albedoName);
+    albedoFile = imresize(albedoFile, [64, 64]);
+    %rotated = permute(albedoFile, [2, 1, 3]);
     
     fileM = imread(maskName);
     fileM = imresize(fileM, [64, 64]);
@@ -82,6 +92,11 @@ while feof(aF) == false
     
 
     fileN = faceFile.* uint8(nMask);
+    
+    shading1 = fileN./albedoFile;
+    rotated = permute(shading1, [2, 1, 3]);
+    shading = cat(4, shading, rotated);
+
     normalImg = imread(normalName);
     normalImg = imresize(normalImg, [64, 64]);
     rotated = permute(normalImg, [2, 1, 3]);
@@ -123,37 +138,41 @@ while feof(aF) == false
         h5create(dataName, '/Mask', [64 64 3 sizePerH5], 'Datatype', 'uint8');
         h5write(dataName, '/Mask', iMask);
 
+        h5create(dataName, '/Shading', [64 64 3 sizePerH5], 'Datatype', 'uint8');
+        h5write(dataName, '/Shading', shading);
+
+        shading = []
         im = [];
         iMask = [];
         if runSIRFS
             shOut = shflatten';
             % Store Lighting
-            h5create(dataName, '/Lighting', [27 sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/Lighting', shOut);
+            h5create(dataName, '/SIRFS_Lighting', [27 sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/SIRFS_Lighting', shOut);
             % Store Normal
-            h5create(dataName, '/Normal', [64 64 3 sizePerH5] , 'Datatype', 'double');
-            h5write(dataName, '/Normal', normals);
+            h5create(dataName, '/SIRFS_Normal', [64 64 3 sizePerH5] , 'Datatype', 'double');
+            h5write(dataName, '/SIRFS_Normal', normals);
             % Store Reflectance
-            h5create(dataName, '/Reflectance', [64 64 3 sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/Reflectance', reflectances);
+            h5create(dataName, '/SIRFS_Reflectance', [64 64 3 sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/SIRFS_Reflectance', reflectances);
             % Store Shading
-            h5create(dataName, '/Shading', [64 64 3 sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/Shading', shadings);
+            h5create(dataName, '/SIRFS_Shading', [64 64 3 sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/SIRFS_Shading', shadings);
             % Store Height
-            h5create(dataName, '/Height', [64 64 sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/Height', heights);
+            h5create(dataName, '/SIRFS_Height', [64 64 sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/SIRFS_Height', heights);
             % Store Final Loss
-            h5create(dataName, '/FinalLoss', [sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/FinalLoss', finalLoss);
+            h5create(dataName, '/SIRFS_FinalLoss', [sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/SIRFS_FinalLoss', finalLoss);
 
             % Store Final Loss
-            h5create(dataName, '/TrueNormal', [64 64 3 sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/TrueNormal', trueNormal);
+            h5create(dataName, '/Normal', [64 64 3 sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/Normal', trueNormal);
             
             % Store Final Loss
             trueLighting = trueLighting';
-            h5create(dataName, '/TrueLighting', [27 sizePerH5], 'Datatype', 'double');
-            h5write(dataName, '/TrueLighting', trueLighting);
+            h5create(dataName, '/Lighting', [27 sizePerH5], 'Datatype', 'double');
+            h5write(dataName, '/Lighting', trueLighting);
             
             shflatten = [];
             normals = [];
